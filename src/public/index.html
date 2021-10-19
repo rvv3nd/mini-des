@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Des reducido</title>
+    <link rel="icon" href="/img/icon.png">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="https://kit.fontawesome.com/086f947000.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/main.css">
+    
+</head>
+<body>
+    
+    <nav class="navbar">
+        <a class="navbar-brand mx-auto text-white" href="/">Chat cifrado con DES</a>
+    </nav>
+    <div class="card col-md-4 mt-5 mx-auto" id="nickWrap">
+        <div class="card-header">
+            <h3 class="text-dark">Iniciar Sesión</h3>
+        </div>
+        <div class="card-body">
+            <form id="nickForm">
+                <div class="input-group mb-3 mt-4">
+                    <span class="input-group-text" id="addon-wrapping"><i class="fas fa-user"></i></span>
+                    <input type="text" id="nickName" class="form-control" placeholder="User">
+                </div>
+                <div class="input-group flex-nowrap mb-3 mt-4">
+                    <span class="input-group-text" id="addon-wrapping"><i class="fas fa-lock"></i></span>
+                    <input type="text" id="clave_uno" class="form-control" placeholder="Clave de transposición">
+                </div>
+                <p for="">Tipo de codificación: </p>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
+                    <label class="form-check-label" for="inlineRadio1">16 bits</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+                    <label class="form-check-label" for="inlineRadio2">32 bits</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option3">
+                    <label class="form-check-label" for="inlineRadio2">64 bits</label>
+                </div>
+                <div class="input-group flex-nowrap mb-3 mt-4">
+                    <span class="input-group-text" id="addon-wrapping"><i class="fas fa-lock"></i></span>
+                    <input type="text" id="clave_dos" class="form-control" placeholder="Clave de transposicion">
+                </div>
+                <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-sign-in-alt"></i> Ingresar </button>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="container" id="containerWrap">
+        <div class="col-md-6 mt-4 mx-auto">
+            <div class="card-header">
+                <div id="user_name"></div>
+            </div>
+            <div id="chat" class="car-body">
+            </div>
+            <form id="mensaje-form" class="card-footer">
+                <div class="input-group mb-3">
+                    <input id="mensaje" type="text" class="form-control" placeholder="Mensaje">
+                    <button class="btn" type="submit" id="button-enviar"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <footer>
+        
+        <div>
+            <a class="text-white" href="https://github.com/rvv3nd/quantum_cipher/blob/main/src/public/js/main.js"><img src="/img/icon-github.png"/></a>
+        </div>
+        <div>
+            <a class="text-white" href="https://github.com/rvv3nd/quantum_cipher/blob/main/src/public/js/main.js">Código de la práctica</a>
+        </div>
+    </footer>
+    
+</body>
+</html>

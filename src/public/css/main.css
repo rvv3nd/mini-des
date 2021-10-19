@@ -1,0 +1,86 @@
+@import url("https://fonts.googleapis.com/css?family=Merriweather:700&display=swap");
+
+body{
+    height: 100vh;
+    background-image: url("/img/gato-small.gif");
+    background-repeat: no-repeat;
+    background-position: 50% 40% ;
+    background-color: #6C5B7B; /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    text-align: center;
+    color: black;
+}
+
+
+#nickWrap{
+    border-radius: 20px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    min-height: 200px;
+    background: rgba(255,255,255,.9);
+}
+
+
+#containerWrap{
+    display: none;
+}
+
+.card-header{
+    background: rgba(0, 0, 0, .3);
+}
+
+#my_user{
+    text-align: left;
+    padding-left: 30px;
+    padding-top: 10px;
+}
+
+.btn{
+    transition: .5s;
+    background: rgba(0,0,0,.5);
+    color: white;
+}
+.btn:hover{
+    transition: .5s;
+    background: rgba(255,255,255,.5);
+    color: black;
+}
+
+.msg_onchat{
+    padding: 12px;
+}
+
+#mensaje-form{
+    padding: 0;
+}
+
+#chat{
+    text-align: left;
+    height: 300px;
+    max-height: 300px;
+    overflow-y: auto;
+    scroll-behavior: auto;
+    background: rgba(0,0,0,.6);
+}
+.arrows{
+    display: flex;
+    justify-content: space-between;
+    margin: 0px;
+    padding: 20px;
+    background:rgba(0, 0, 0, .3);
+}
+.navbar{
+    background: rgba(0,0,0,.2);
+}
+footer{
+    font-family: "Merriweather", rgb(53, 53, 53);
+    font-size: small;
+    display: flex;
+    margin-top: 40px;
+    flex-direction: column;
+    align-items: center;
+    justify-items: flex-end;
+  }
+  footer a{
+      text-decoration: none;
+      color: whitesmoke;
+  }
