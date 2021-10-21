@@ -53,17 +53,12 @@ const ascii = [
     "¹",  "³",   "²",   "■",  " "
   ]
 
-const equivalencias = {
-    "0":0, "90":1, "180":0, //0 es igual a 180
-    "45":0,"135":1,
-}
-
-const key = "zÇ{ouvw}kx" // == qwertyuiop
+var ok_clave1, ok_clave2, bloques = 0
 
 $(function(){
     const socket = io();
     //console.log('works!')
-
+    
     //getting items from html
     const $msgForm = $('#mensaje-form')
     const $msg = $('#mensaje')
@@ -74,26 +69,22 @@ $(function(){
     //eventos
     $msgForm.submit( e => {
         e.preventDefault()
-        console.log('sending data')
-        var angulos = []
-        for(let i=1;i<=10;i++){
-            angulos.push($('#arrow_'+i).attr("alt"))
-        }
-        const txt = codifica($msg.val(),angulos) 
+        //console.log('sending data')
+        const txt = codifica($msg.val(),ok_clave1,ok_clave2) 
         $msg.val("");
         socket.emit('send message',txt,$('#my_user').text()) 
     })
 
     $nickForm.submit(e =>{
         e.preventDefault()
-        if(claveValida($('#password').val())){
-            console.log('Iniciando sesión')
+        if(validaClaves() && bloques!=0){
+            //console.log('Iniciando sesión')
+            ok_clave1 = $("#clave_uno").val()
+            ok_clave2 = $("#clave_dos").val()
+            //console.log(`${ok_clave1} && ${bloques} &&${ok_clave2} `)
             $('#user_name').append('<p id="my_user">'+'<i class="far fa-user"></i> '+$nickName.val()+'<p>')
             $('#containerWrap').css('display','block')
             $('#nickWrap').css('display','none')
-        }
-        else{
-            alert("Contraseña incorrecta")
         }
     })
 
@@ -101,115 +92,144 @@ $(function(){
         var date = new Date()
         $chat.append('<p class="msg_onchat">'+user+' at '+ date.getHours()+':'+date.getMinutes()+':<br> '+text+'</p>'+'<br>')
         $(".msg_onchat").click(function(){
-            var angulos = []
-            for(let i=1;i<=10;i++){
-                angulos.push($('#arrow_'+i).attr("alt"))
-            }
-            alert(decodifica(text,angulos))
+            alert(decodifica(text,ok_clave1,ok_clave2))
         })
         $chat.scrollTop($chat.prop('scrollHeight'))
     })
+
+    $(".form-check-input").on( 'change', function() {
+        if( $(this).is(':checked') ) {
+            // Hacer algo si el checkbox ha sido seleccionado
+            bloques = Number( $(this).val())
+        }
+    });
 })
 
-function claveValida(attemp){
-    return (cipherCajas(attemp) == key) ? true : false   
+function validaClaves(){
+    const k1 = $("#clave_uno").val()
+    const k2 = $("#clave_dos").val()
+    var aux = [] 
+    if (k1.length == 0 || k2.length == 0) {
+        alert("Falta completar las claves de transposición")
+        return false
+    }
+    if(k1.length%2 != k2.length%2 ){
+        alert("Contraseñas incompatibles")
+        return false
+    }
+    for(letra of k1){
+        if(aux.includes(letra)){ 
+            alert("La clave uno no es valida. Intente sin caracteres repetidos")
+            return false
+        }
+        aux.push(letra)
+    }
+    aux = []
+    for(letra of k2){
+        if(aux.includes(letra)){ 
+            alert("La clave dos no es valida. Intente sin caracteres repetidos")
+            return false
+        }
+        aux.push(letra)
+    }
+    return true
 }
 
-function codifica(msg, array_angulos){
-    var palabras = [], res=""
+function codifica(text,k1,k2){
+    text = transposicion(text,k1)
+    // text = cipherXbloques(text,bloques)
+    text = transposicion(text,k2)
+    return text
+}
+
+function decodifica(text,k1,k2){
+    var res = ""
+    text = destrans(text,k2)
+    //text = desBloques(text,bloques)
+    text = destrans(text,k1)
+    text = text.split("")
+    for(element of text){
+        res += (element != "_") ? element : ""
+    }
+    return res
+}
+
+function transposicion(text,key){
+    var res = ""
+    //console.log(`${text} =>`)
+    text = text.split("")
+    const columns = (text.length > key.length) ? key.length : text.length
+    const rows = Math.ceil(text.length / columns)
     
+    var indices = getIndices(key) //array con los indices de cada caracter segun el codigo ascii
     /*
-        De cada letra del mensaje 
-        obtiene los n bits correspondientes segun el ascii
-        cada bit se almacena en un array que se va 
-        en otro array de todas las letras
+        En cada iteración se obtiene el menor indice para ir agregando los caracteres correspondientes
+        a esa columna
     */
-    for(letra of msg){
-        const letra_on_binary = ascii.indexOf(letra).toString(2) 
-        palabras.push(letra_on_binary.split(""))  
-    }
-    // for(element of array_angulos){
-    //     console.log(element)
-    // }
-    // for(element of palabras){
-    //     console.log(element)
-    // }
-
-    /*
-    Se recorre la matriz multiplicando bit por bit
-    con las posiciones elegidas en las flechitas
-    */
-
-    for(word of palabras){
-        var letra_codificada = "", i = 0
-        for(element of word){
-            //console.log(`${element}^${equivalencias[array_angulos[i]]} = ${element ^ equivalencias[array_angulos[i]]}`)
-            letra_codificada += element ^ equivalencias[array_angulos[i++]] //cada elemento en binario se multiplica por el equivalente en binario del angulo
+    for (let i=0; i<columns; i++){ //recorre la clave
+        var menor = getMenor(indices)
+        indices[menor] = 9999
+        var idx = menor
+        while(idx < rows*columns){//recorre el texto
+            res += text[idx] != undefined ? text[idx] : "_" 
+            idx += columns
         }
-        //console.log(`${letra_codificada} = ${binarioADecimal(letra_codificada)}`)
-        res += ascii[binarioADecimal(letra_codificada)]
-    }  
-
-    return res 
-}
-
-function decodifica(text,array_angulos){
-    var text_deco = "", code_words = []
-
-    for(letra of text){
-        const letra_on_binary = ascii.indexOf(letra).toString(2) 
-        code_words.push(letra_on_binary.split(""))  
     }
-
-    for(word of code_words){
-        var letra_decodificada = "", i = 0
-        for(element of word){
-            letra_decodificada += element ^ equivalencias[array_angulos[i++]] //cada elemento en binario se multiplica por el equivalente en binario del angulo
-        }
-        text_deco += ascii[binarioADecimal(letra_decodificada)]
-    }
-
-    return text_deco
-}
-
-//funciones auxiliares 
-function binarioADecimal(num) {
-    let sum = 0;
-
-    for (let i = 0; i < num.length; i++) {
-       sum += +num[i] * 2 ** (num.length - 1 - i);
-    }
-    return sum;
-}
-function rotar(id){
-    var val = Number($("#"+id).attr("alt")) + 45
-    console.log(val)
-    $("#"+id).css("transform",'rotate('+(val)+'deg)')
-    $("#"+id).css("transition",".5s")
-    if(val>=180) val = 0
-    $("#"+id).attr("alt",val)
-}
-
-function cipherCajas(txt){
-    txt = sus(txt)
-    txt = per(txt)
-    txt = sus(txt)
-    txt = per(txt)
-    return txt
-}
-
-function sus(cad){
-    var res = ""
-    for(char of cad){
-        res += ascii[(ascii.indexOf(char)+3)%ascii.length]
-    }
+    //console.log(res)
     return res
 }
-function per(cad){
-    var res = ""
-    var array = cad.split("")
-    for(let i=0;i<array.length;i++){
-        res += array[(i+2)%array.length]
+
+function destrans(text,key){
+    const columns = (text.length > key.length) ? key.length : text.length
+    const rows = Math.ceil(text.length / columns)
+    text = text.split("").reverse()
+    console.log(`Reversed text: ${text}`)
+    var res = [text.length]
+    var indices = getIndices(key)
+    var aux = [] 
+    while(text.length>0){
+        for(let i=0;i<rows;i++){
+            aux.push(text.pop())
+        }
+        console.log(`Elementos obtenidos:`)
+        console.log(aux)
+        var idx = getMenor(indices)
+        indices[idx] = 999  
+        console.log(`indice por donde se empieza: ${idx}`)
+        for(element of aux){
+            res[idx] = element
+            idx += columns 
+        }
+        aux = []
     }
-    return res
+    console.log(res.join(""))
+    return res.join("")
 }
+
+function getIndices(key){
+    key = key.split("")
+    var indices = []
+    for(element of key){
+        indices.push(ascii.indexOf(element))
+    }
+    return indices
+}
+
+function getMenor(array){
+    /*Obtiene el indice menor */
+    menor = array[0]
+    for (let i=1;i<array.length;i++){
+        if (menor > array[i]) menor = array[i]
+    }
+    return array.indexOf(menor)
+}
+
+/**
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+    
