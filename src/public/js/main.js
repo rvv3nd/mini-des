@@ -142,17 +142,24 @@ function validaClaves(){
 */
 
 function codifica(text,k1,k2,nbits){
-    //text = transposicion(text,k1)
-    text = cipherBloques(text,nbits)
-    console.log(new_text)
-    //text = transposicion(text,k2)
-    return new_text
+    text = transposicion(text,k1)
+    //text = cipherBloques(text,nbits)
+    text = sus(text)
+    //text = per(text)
+    text = sus(text)
+    // text = per(text)
+    text = transposicion(text,k2)
+    return text
 }
 
 function decodifica(text,k1,k2,nbits){
     var res = ""
     text = destrans(text,k2)
-    text = descipherBloques(text,nbits)
+    //text = desper(text)
+    text = dessus(text)
+    // text = desper(text)
+    text = dessus(text)
+    // text = descipherBloques(text,nbits)
     text = destrans(text,k1)
     text = text.split("")
     for(element of text){
@@ -163,15 +170,15 @@ function decodifica(text,k1,k2,nbits){
 
 function transposicion(text,key){
     var res = ""
-    //console.log(`${text} =>`)
+
     text = text.split("")
     const columns = (text.length > key.length) ? key.length : text.length
     const rows = Math.ceil(text.length / columns)
     
     var indices = getIndices(key) //array con los indices de cada caracter segun el codigo ascii
     /*
-        En cada iteración se obtiene el menor indice para ir agregando los caracteres correspondientes
-        a esa columna
+        En cada iteración se obtiene el menor indice para ir agregando 
+        los caracteres correspondientes a esa columna
     */
     for (let i=0; i<columns; i++){ //recorre la clave
         var menor = getMenor(indices)
@@ -182,7 +189,7 @@ function transposicion(text,key){
             idx += columns
         }
     }
-    //console.log(res)
+
     return res
 }
 
@@ -255,6 +262,38 @@ function cipherBloques(text,n){
 
 function descipherBloques(text,n){
 
+}
+
+function sus(cad){
+    var res = ""
+    for(char of cad){
+        res += ascii[(ascii.indexOf(char)+3)%ascii.length]
+    }
+    return res
+}
+function dessus(cad){
+    var res = ""
+    for(char of cad){
+        res += ascii[(ascii.indexOf(char)-3)%ascii.length]
+    }
+    return res
+}
+
+function per(cad){
+    var res = ""
+    var array = cad.split("")
+    for(let i=0;i<array.length;i++){
+        res += array[(i+2)%array.length]
+    }
+    return res
+}
+function desper(cad){
+    var res = ""
+    var array = cad.split("")
+    for(let i=0;i<array.length;i++){
+        res += array[(i-2)%array.length]
+    }
+    return res
 }
 
 /*
