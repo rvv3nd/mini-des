@@ -53,7 +53,7 @@ const ascii = [
     "¹",  "³",   "²",   "■",  " "
   ]
 
-var ok_clave1, ok_clave2, bloques = 0
+var ok_clave1, ok_clave2, bloques = 0, ceros = []
 
 $(function(){
     const socket = io();
@@ -143,11 +143,11 @@ function validaClaves(){
 
 function codifica(text,k1,k2,nbits){
     text = transposicion(text,k1)
-    //text = cipherBloques(text,nbits)
+    // text = cipherBloques(text,nbits)
     text = sus(text)
-    //text = per(text)
+    text = per(text)
     text = sus(text)
-    // text = per(text)
+    text = per(text)
     text = transposicion(text,k2)
     return text
 }
@@ -155,9 +155,9 @@ function codifica(text,k1,k2,nbits){
 function decodifica(text,k1,k2,nbits){
     var res = ""
     text = destrans(text,k2)
-    //text = desper(text)
+    text = desper(text)
     text = dessus(text)
-    // text = desper(text)
+    text = desper(text)
     text = dessus(text)
     // text = descipherBloques(text,nbits)
     text = destrans(text,k1)
@@ -227,43 +227,57 @@ function destrans(text,key){
 }
 
 function cipherBloques(text,n){
-    var allBits = getBits(text) //array de bloques iguales
-    console.log(typeof(n))
-    const restos =  allBits.length % n 
-    console.log(restos)
-    var i = restos
-    /*
-    Segun el modulo serán caracteres que no encontrarás un n-conjunto para intercambiarse 
-    Para evitar errores en el decifrado se excluyen del intercambio a lo sumo n-1 bits
-    i es un indice que es de donde se empezarán los intercambios
-    */
-    var aux = []
-    while(i<allBits.length*n){
-       aux.push(allBits.slice(i,(i+n).toString()))
-       console.log(`${i}=>`)
-       i += n
-       console.log(i)
-       console.log(aux)
+    ceros = []
+    var getDatas = getBits(text) //array de bloques iguales
+    text = getDatas[0]
+    var indexes = getDatas[1]
+    let sobrantes = text.length % n
+    if(sobrantes > 0){
+        var tempo = text.slice(0,sobrantes)
     }
-    var array = [aux.length]
-    for(let i=0;i<array.length/2;i++){
-        array[i] = aux[n-i]
-        array[n-i] = aux[i]
+    var inter = text.slice(sobrantes,text.length)
+    var array = []
+    for(let i=0;i<inter.length;i+=n){
+        /*
+         Obtiene los n-bloques
+        */
+        array.push(inter.slice(i,i+n))
     }
-    console.log(array)
-    array.unshift(allBits.slice(0,restos)) //agrega los restos
-    var res = ""
-    console.log(array)
-    for(element of array){
-        res += binarioADecimal(Number(element))
+    
+    var yarra = []
+    for (element of array){
+        /*
+        Hace el intercambio de posiciones de los n-bloques
+         */
+        yarra.unshift(element)
     }
+    yarra.unshift(tempo)
+    yarra = yarra.join("")
+    console.log(yarra.length)
+
+    res = ""
+    var k = 0
+    for(let i=0;i<indexes.length;i++){
+        let longitud = indexes[i]
+        /**
+         * Se guardan los indices donde empeizan con cero
+         * para comparar longitud y entonces agregar esos ceros
+         * faltantes en el descifrado
+         */
+        if(yarra[k]==0) ceros.push(k)
+        res += ascii[binarioADecimal(yarra.slice(k,k+longitud))]
+        k += longitud
+    }
+    console.log(ceros)
     return res
 }
 
 function descipherBloques(text,n){
-
+    var getDatas = getBits(text) //array de bloques iguales
+    text = getDatas[0]
+    console.log(text)
+    console.log(text.length)
 }
-
 function sus(cad){
     var res = ""
     for(char of cad){
@@ -278,26 +292,31 @@ function dessus(cad){
     }
     return res
 }
-
 function per(cad){
     var res = ""
     var array = cad.split("")
-    for(let i=0;i<array.length;i++){
-        res += array[(i+2)%array.length]
+    array.push(array[0])
+    array.push(array[1])
+    for(let i=0;i<array.length-2;i++){
+        res += array[(i+2)]
     }
+    //console.log(res)
     return res
 }
 function desper(cad){
     var res = ""
     var array = cad.split("")
-    for(let i=0;i<array.length;i++){
-        res += array[(i-2)%array.length]
+    array.unshift(array[array.length-1])
+    array.unshift(array[array.length-2])
+    for(let i=2;i<array.length;i++){
+        res += array[(i-2)]
     }
+    //console.log(res)
     return res
 }
 
 /*
-*FUNCIONE AUXILIARES
+*FUNCIONES AUXILIARES
 */
 
 function getIndices(key){
@@ -331,13 +350,17 @@ function getBits(text){
         /*
         *Devuelve un string con los bits
         del asciis correspondiente al caracter
+        y la longitud de cada caracter en bits
         */
-        var res = []
-        for(char of text){
-            res .push(ascii.indexOf(char).toString(2))
+        var array = []
+        let res = ""
+        for (element of text){
+            let index = ascii.indexOf(element)
+            res += index.toString(2)
+            array.push(index.toString(2).length)
         }
-        console.log(typeof(res),`:`,res)
-        return res
+        // console.log(typeof(res))
+        return [res,array]
 }
 
 /**
